@@ -43,10 +43,6 @@ app.use(
 
 app.use(routes);
 
-app.get("/", (req, res) => {
-  res.send("test");
-});
-
 // app.listen(8000, () => console.log(`Listening on port ${8000}...`));
 
 module.exports = app;
