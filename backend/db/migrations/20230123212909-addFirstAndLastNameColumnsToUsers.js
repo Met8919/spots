@@ -16,25 +16,17 @@ module.exports = {
      * await queryInterface.createTable('users', { id: Sequelize.INTEGER });
      */
 
-    await queryInterface.addColumn(
-      "Users",
-      "firstName",
-      {
-        type: Sequelize.VARCHAR(),
-        allowNull: false,
-      },
-      options
-    );
+    options.tableName = "Users";
 
-    await queryInterface.addColumn(
-      "Users",
-      "lastName",
-      {
-        type: Sequelize.VARCHAR(),
-        allowNull: false,
-      },
-      options
-    );
+    await queryInterface.addColumn(options, "firstName", {
+      type: Sequelize.VARCHAR(),
+      allowNull: false,
+    });
+
+    await queryInterface.addColumn(options, "lastName", {
+      type: Sequelize.VARCHAR(),
+      allowNull: false,
+    });
   },
 
   async down(queryInterface, Sequelize) {
@@ -45,7 +37,9 @@ module.exports = {
      * await queryInterface.dropTable('users');
      */
 
-    await queryInterface.removeColumn("Users", "firstName");
-    await queryInterface.removeColumn("Users", "lastName");
+    options.tableName = "Users";
+
+    await queryInterface.removeColumn(options, "firstName");
+    await queryInterface.removeColumn(options, "lastName");
   },
 };
