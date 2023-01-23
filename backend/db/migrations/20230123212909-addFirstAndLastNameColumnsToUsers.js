@@ -19,13 +19,11 @@ module.exports = {
     options.tableName = "Users";
 
     await queryInterface.addColumn(options, "firstName", {
-      type: Sequelize.VARCHAR(),
-      allowNull: false,
+      type: Sequelize.STRING,
     });
 
     await queryInterface.addColumn(options, "lastName", {
-      type: Sequelize.VARCHAR(),
-      allowNull: false,
+      type: Sequelize.STRING,
     });
   },
 
