@@ -1,6 +1,12 @@
 "use strict";
 
 /** @type {import('sequelize-cli').Migration} */
+
+let options = {};
+if (process.env.NODE_ENV === "production") {
+  options.schema = process.env.SCHEMA; // define your schema in options object
+}
+
 module.exports = {
   async up(queryInterface, Sequelize) {
     /**
@@ -9,15 +15,26 @@ module.exports = {
      * Example:
      * await queryInterface.createTable('users', { id: Sequelize.INTEGER });
      */
-    await queryInterface.addColumn("Users", "firstName", {
-      type: Sequelize.VARCHAR(),
-      allowNull: false,
-    });
 
-    await queryInterface.addColumn("Users", "lastName", {
-      type: Sequelize.VARCHAR(),
-      allowNull: false,
-    });
+    await queryInterface.addColumn(
+      "Users",
+      "firstName",
+      {
+        type: Sequelize.VARCHAR(),
+        allowNull: false,
+      },
+      options
+    );
+
+    await queryInterface.addColumn(
+      "Users",
+      "lastName",
+      {
+        type: Sequelize.VARCHAR(),
+        allowNull: false,
+      },
+      options
+    );
   },
 
   async down(queryInterface, Sequelize) {
