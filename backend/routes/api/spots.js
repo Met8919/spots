@@ -99,6 +99,50 @@ router.delete("/:spotId", async (req, res) => {
   });
 });
 
+router.get("/current", async (req, res) => {
+  const userId = req.user.dataValues.id;
+
+  if (!userId) return res.status(403).json({ message: "must be logged in" });
+
+  const spots = await Spot.findAll({
+    where: {
+      ownerId: userId,
+    },
+  });
+
+  for (let spot of spots) {
+    const previewImage = await SpotImage.findOne({
+      where: { spotId: spot.id, preview: true },
+      attributes: ["url"],
+    });
+
+    // const averageRating = await sequelize.query(
+    //   "SELECT AVG(stars) as averageValue FROM Reviews WHERE reviews.spotId = spots.id",
+    //   { type: sequelize.QueryTypes.SELECT }
+    // );
+
+    const spotId = spot.dataValues.id;
+    const averageRating = await sequelize.query(
+      "SELECT AVG(stars) as averageValue FROM Reviews WHERE spotId = :spotId",
+      {
+        replacements: { spotId: spotId },
+        type: sequelize.QueryTypes.SELECT,
+      }
+    );
+
+    let avg = averageRating[0].averageValue.toFixed(2);
+
+    spot.dataValues["previewImage"] =
+      previewImage.url || "No preview available";
+
+    spot.dataValues["averageRating"] = avg || "No ratings";
+  }
+
+  if (!spots) return res.status(404).json({ message: "no spots found" });
+
+  return res.status(200).json(spots);
+});
+
 //
 // get details of a spot
 //
