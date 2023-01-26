@@ -90,7 +90,7 @@ module.exports = {
     return queryInterface.bulkDelete(
       options,
       {
-        spotId: { [Op.in]: [1] },
+        spotId: { [Op.gte]: 1 },
       },
       {}
     );

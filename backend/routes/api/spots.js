@@ -1,6 +1,13 @@
 const express = require("express");
 const router = express.Router();
-const { Spot, User, SpotImage, sequelize, Review } = require("../../db/models");
+const {
+  Spot,
+  User,
+  SpotImage,
+  sequelize,
+  Review,
+  ReviewImage,
+} = require("../../db/models");
 
 const { Op } = require("sequelize");
 
@@ -33,8 +40,8 @@ router.get("/", async (req, res) => {
     limit = 20;
   }
 
-  pagination["limit"] = limit;
-  pagination["offset"] = offset;
+  pagination.limit = limit;
+  pagination.offset = offset;
 
   const allSpots = await Spot.findAll({
     where,
@@ -198,6 +205,43 @@ router.get("/current", async (req, res) => {
   if (!spots) return res.status(404).json({ message: "no spots found" });
 
   return res.status(200).json(spots);
+});
+
+//Create a Review for a Spot based on the Spot's id
+
+router.post("/:spotId/reviews", async (req, res) => {
+  const userId = req.user.id;
+  let { review, stars } = req.body;
+  stars = Number(stars);
+  const spotId = Number(req.params.spotId);
+
+  if (stars < 1 || stars > 5) {
+    return res.status(400).json({ message: "stars must be between 1 and 5" });
+  }
+
+  const newRreview = await Review.create({ review, stars, userId, spotId });
+
+  return res.status(201).json(newRreview);
+});
+
+// GET ALL REVIEWS BY SPOTS ID
+
+router.get("/:spotId/reviews", async (req, res) => {
+  const userId = req.user.id;
+
+  const reviews = await Review.findAll({
+    where: { spotId: req.params.spotId },
+    include: [{ model: ReviewImage }, { model: User }],
+  });
+
+  if (!reviews) {
+    return res.status(404).json({
+      message: "Spot couldn't be found",
+      statusCode: 404,
+    });
+  }
+
+  res.status(200).json({ Reviews: reviews });
 });
 
 // EDIT A SPOT
