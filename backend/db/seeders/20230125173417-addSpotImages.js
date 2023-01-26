@@ -17,6 +17,41 @@ module.exports = {
           url: "image url",
           preview: true,
         },
+        {
+          spotId: 2,
+          url: "image url",
+          preview: true,
+        },
+        {
+          spotId: 3,
+          url: "image url",
+          preview: true,
+        },
+        {
+          spotId: 4,
+          url: "image url",
+          preview: true,
+        },
+        {
+          spotId: 5,
+          url: "image url",
+          preview: true,
+        },
+        {
+          spotId: 6,
+          url: "image url",
+          preview: true,
+        },
+        {
+          spotId: 1,
+          url: "image url",
+          preview: true,
+        },
+        {
+          spotId: 1,
+          url: "image url",
+          preview: true,
+        },
       ],
       {}
     );
@@ -28,7 +63,7 @@ module.exports = {
     return queryInterface.bulkDelete(
       options,
       {
-        spotId: { [Op.in]: [1, 2] },
+        spotId: { [Op.in]: [1, 2, 3, 4, 5, 6] },
       },
       {}
     );
