@@ -2,10 +2,72 @@ const express = require("express");
 const router = express.Router();
 const { Spot, User, SpotImage, sequelize, Review } = require("../../db/models");
 
+const { Op } = require("sequelize");
+
 // Get all spots
 router.get("/", async (req, res) => {
-  const allSpots = await Spot.findAll();
-  return res.json(allSpots);
+  let where = {};
+  let pagination = {};
+
+  let { page, size } = req.query;
+  let { minLat, maxLat, minLng, maxLng, minPrice, maxPrice } = req.query;
+
+  if (minLat) where.lat = { [Op.gte]: minLat };
+  if (maxLat) where.lat = { [Op.lte]: maxLat };
+  if (minLng) where.lng = { [Op.gte]: minLng };
+  if (maxLng) where.lng = { [Op.lte]: maxLng };
+  if (minPrice) where.price = { [Op.gte]: minPrice };
+  if (maxPrice) where.price = { [Op.lte]: maxPrice };
+
+  let offset;
+  let limit;
+  if (page >= 1 && page <= 10) {
+    offset = page;
+  } else {
+    offset = 1;
+  }
+
+  if (size >= 1 && size <= 20) {
+    limit = size;
+  } else {
+    limit = 20;
+  }
+
+  pagination["limit"] = limit;
+  pagination["offset"] = offset;
+
+  const allSpots = await Spot.findAll({
+    where,
+    ...pagination,
+  });
+
+  for (let spot of allSpots) {
+    const previewImage = await SpotImage.findOne({
+      where: { spotId: spot.id, preview: true },
+      attributes: ["url"],
+    });
+
+    const spotId = spot.dataValues.id;
+    const averageRating = await sequelize.query(
+      "SELECT AVG(stars) as averageValue FROM Reviews WHERE spotId = :spotId",
+      {
+        replacements: { spotId: spotId },
+        type: sequelize.QueryTypes.SELECT,
+      }
+    );
+
+    let avg = averageRating[0].averageValue.toFixed(2);
+
+    spot.dataValues["previewImage"] =
+      previewImage?.url || "No preview available";
+
+    spot.dataValues["averageRating"] = avg || "No ratings";
+  }
+
+  // allSpots["page"] = offset;
+  // allSpots["size"] = limit;
+
+  return res.status(200).json({ spots: allSpots, page: offset, size: limit });
 });
 
 // create spot
@@ -116,11 +178,6 @@ router.get("/current", async (req, res) => {
       attributes: ["url"],
     });
 
-    // const averageRating = await sequelize.query(
-    //   "SELECT AVG(stars) as averageValue FROM Reviews WHERE reviews.spotId = spots.id",
-    //   { type: sequelize.QueryTypes.SELECT }
-    // );
-
     const spotId = spot.dataValues.id;
     const averageRating = await sequelize.query(
       "SELECT AVG(stars) as averageValue FROM Reviews WHERE spotId = :spotId",
@@ -133,7 +190,7 @@ router.get("/current", async (req, res) => {
     let avg = averageRating[0].averageValue.toFixed(2);
 
     spot.dataValues["previewImage"] =
-      previewImage.url || "No preview available";
+      previewImage?.url || "No preview available";
 
     spot.dataValues["averageRating"] = avg || "No ratings";
   }
@@ -143,8 +200,46 @@ router.get("/current", async (req, res) => {
   return res.status(200).json(spots);
 });
 
+// EDIT A SPOT
 //
-// get details of a spot
+
+router.put("/:spotId", async (req, res) => {
+  const userId = req.user.dataValues.id;
+
+  const spot = await Spot.findByPk(req.params.spotId);
+
+  if (!spot)
+    return res.status(404).json({
+      message: "Spot couldn't be found",
+      statusCode: 404,
+    });
+
+  if (spot.ownerId !== userId)
+    return res.status(403).json({ message: "Must own spot to edit" });
+
+  const values = ({
+    address,
+    city,
+    state,
+    country,
+    lat,
+    lng,
+    name,
+    description,
+    price,
+  } = req.body);
+
+  try {
+    await spot.update({ ...values });
+  } catch (err) {
+    return res.status(400).json(err);
+  }
+
+  return res.status(200).json(spot);
+});
+
+//
+// GET DETAILS OF A SPOT
 //
 //
 //
@@ -175,9 +270,6 @@ router.get("/:spotId", async (req, res) => {
       "price",
       "createdAt",
       "updatedAt",
-
-      [sequelize.fn("AVG", sequelize.col("reviews.stars")), "avgStarRating"],
-      [sequelize.fn("COUNT", sequelize.col("reviews.id")), "numReviews"],
     ],
   });
 
@@ -186,6 +278,17 @@ router.get("/:spotId", async (req, res) => {
       message: "Spot couldn't be found",
       statusCode: 404,
     });
+
+  const numReviews = await Review.count({
+    where: { spotId: spot.id },
+  });
+
+  const sum = await Review.sum("stars", {
+    where: { spotId: spot.id },
+  });
+
+  spot.dataValues["avgStarRating"] = Math.round((sum / numReviews) * 100) / 100;
+  spot.dataValues["numReviews"] = numReviews;
 
   return res.json(spot);
 });

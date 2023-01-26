@@ -31,11 +31,54 @@ module.exports = {
           stars: 3,
         },
         {
-          userId: 1,
+          userId: 2,
           spotId: 2,
           review: "This spot was okay.",
           stars: 3,
-        }
+        }, //
+        {
+          userId: 3,
+          spotId: 2,
+          review: "The spot was perfect for my needs. Highly recommend it.",
+          stars: 5,
+        },
+        {
+          userId: 4,
+          spotId: 3,
+          review: "The spot was not as clean as I would have liked.",
+          stars: 3,
+        },
+        {
+          userId: 2,
+          spotId: 4,
+          review: "The spot had a great view and was in a great location.",
+          stars: 4,
+        },
+        {
+          userId: 1,
+          spotId: 5,
+          review: "I was disappointed with the service at this spot.",
+          stars: 2,
+        },
+        {
+          userId: 4,
+          spotId: 6,
+          review:
+            "I had an amazing experience at this spot. Highly recommend it.",
+          stars: 5,
+        },
+        {
+          userId: 3,
+          spotId: 1,
+          review: "The spot was okay, nothing special.",
+          stars: 3,
+        },
+        {
+          userId: 3,
+          spotId: 2,
+          review: "The spot had everything I needed and the staff was helpful.",
+          stars: 4,
+        },
       ],
       {}
     );
