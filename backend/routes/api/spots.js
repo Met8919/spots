@@ -7,9 +7,112 @@ const {
   sequelize,
   Review,
   ReviewImage,
+  Booking,
 } = require("../../db/models");
 
 const { Op } = require("sequelize");
+
+//Create a Booking from a Spot based on the Spot's id
+
+router.post("/:spotId/bookings", async (req, res) => {
+  const userId = req.user.id;
+
+  const { startDate, endDate } = req.body;
+
+  const startDateNum = new Date(startDate).valueOf();
+  const endDateNum = new Date(endDate).valueOf();
+
+  const spot = await Spot.findByPk(req.params.spotId, {
+    include: { model: Booking },
+  });
+
+  if (!spot) {
+    return res.status(404).json({
+      message: "Spot couldn't be found",
+      statusCode: 404,
+    });
+  }
+
+  if (spot.ownerId === userId) {
+    return res.status(404).json({
+      message:
+        "Sorry, you are not able to book a spot that you own. Please select a different spot to book.",
+    });
+  }
+
+  if (startDateNum >= endDateNum) {
+    return res.status(400).json({
+      message: "Validation error",
+      statusCode: 400,
+      errors: {
+        endDate: "endDate cannot be on or before startDate",
+      },
+    });
+  }
+
+  const bookings = spot.Bookings;
+
+  // CHECK FOR OVERLAP OF DATES
+  for (let booking of bookings) {
+    const bookedStartDate = new Date(booking.startDate).valueOf();
+    const bookedEndDate = new Date(booking.endDate).valueOf();
+
+    if (startDateNum >= bookedStartDate && startDateNum <= bookedEndDate) {
+      return res.status(403).json({
+        message: "Sorry, this spot is already booked for the specified dates",
+        statusCode: 403,
+        errors: {
+          startDate: "Start date conflicts with an existing booking",
+        },
+      });
+    } else if (endDateNum <= bookedEndDate && endDateNum >= bookedStartDate) {
+      return res.status(403).json({
+        message: "Sorry, this spot is already booked for the specified dates",
+        statusCode: 403,
+        errors: {
+          endDate: "End date conflicts with an existing booking",
+        },
+      });
+    }
+  }
+
+  const newBooking = await Booking.create({
+    startDate,
+    endDate,
+    spotId: spot.id,
+    userId,
+  });
+
+  return res.status(200).json(newBooking);
+});
+
+//Get all Bookings for a Spot based on the Spot's id
+
+router.get("/:spotId/bookings", async (req, res) => {
+  const userId = req.user.id;
+  const spot = await Spot.findByPk(req.params.spotId);
+
+  if (!spot)
+    return res.status(404).json({
+      message: "Spot couldn't be found",
+      statusCode: 404,
+    });
+
+  const options = {};
+
+  if (spot.ownerId === userId) {
+    options.include = { model: User };
+  }
+
+  const bookings = await Booking.findAll({
+    where: {
+      spotId: req.params.spotId,
+    },
+    ...options,
+  });
+
+  return res.status(200).json({ Bookings: bookings });
+});
 
 // Get all spots
 router.get("/", async (req, res) => {
@@ -79,7 +182,7 @@ router.get("/", async (req, res) => {
 
 // create spot
 router.post("/", async (req, res) => {
-  if (!req.user) return res.status(403).json({ error: "must be logged in" });
+  
   let newSpot;
 
   const spotValues = ({
@@ -117,9 +220,6 @@ router.post("/", async (req, res) => {
 router.post("/:spotId/images", async (req, res) => {
   const userId = parseInt(req.user.dataValues.id);
 
-  if (!userId)
-    return res.status(403).json({ message: "You must be logged in" });
-
   const spot = await Spot.findByPk(req.params.spotId);
 
   if (!spot)
@@ -145,8 +245,6 @@ router.post("/:spotId/images", async (req, res) => {
 router.delete("/:spotId", async (req, res) => {
   const userId = req.user.dataValues.id;
 
-  if (!userId) return res.status(403).json({ message: "must be logged in" });
-
   const spot = await Spot.findByPk(req.params.spotId);
 
   if (!spot) {
@@ -170,8 +268,6 @@ router.delete("/:spotId", async (req, res) => {
 
 router.get("/current", async (req, res) => {
   const userId = req.user.dataValues.id;
-
-  if (!userId) return res.status(403).json({ message: "must be logged in" });
 
   const spots = await Spot.findAll({
     where: {
@@ -289,8 +385,6 @@ router.put("/:spotId", async (req, res) => {
 //
 //
 router.get("/:spotId", async (req, res) => {
-  if (!req.user) return res.status(403).json({ message: "must be logged in" });
-
   const spotId = parseInt(req.params.spotId);
 
   const spot = await Spot.findByPk(spotId, {
