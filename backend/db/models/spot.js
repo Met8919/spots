@@ -25,6 +25,11 @@ module.exports = (sequelize, DataTypes) => {
       Spot.hasMany(models.SpotImage, {
         foreignKey: "spotId",
         onDelete: "CASCADE",
+        as: "previewImage",
+      });
+      Spot.hasMany(models.SpotImage, {
+        foreignKey: "spotId",
+        onDelete: "CASCADE",
       });
 
       Spot.hasMany(models.Review, {
@@ -37,22 +42,112 @@ module.exports = (sequelize, DataTypes) => {
   }
   Spot.init(
     {
-      ownerId: DataTypes.INTEGER,
-      address: DataTypes.STRING,
+      ownerId: {
+        type: DataTypes.INTEGER,
+        allowNull: false,
+      },
+      address: {
+        type: DataTypes.STRING,
+
+        validate: {
+          notEmpty(value) {
+            if (!value) {
+              throw new Error("Street adress is required");
+            }
+          },
+        },
+      },
       city: {
         type: DataTypes.STRING,
-        allowNull: false,
+
+        validate: {
+          notEmpty(value) {
+            if (!value) {
+              throw new Error("City is required");
+            }
+          },
+        },
       },
       state: {
         type: DataTypes.STRING,
-        allowNull: false,
+
+        validate: {
+          notEmpty(value) {
+            if (!value) {
+              throw new Error("State is required");
+            }
+          },
+        },
       },
-      country: DataTypes.STRING,
-      lat: DataTypes.DECIMAL,
-      lng: DataTypes.DECIMAL,
-      name: DataTypes.STRING,
-      description: DataTypes.STRING,
-      price: DataTypes.DECIMAL,
+      country: {
+        type: DataTypes.STRING,
+
+        validate: {
+          notEmpty(value) {
+            if (!value) {
+              throw new Error("Country is required");
+            }
+          },
+        },
+      },
+      lat: {
+        type: DataTypes.DECIMAL,
+        validate: {
+          inRange(value) {
+            if (value < -90 || value > 90 || typeof value !== "number") {
+              throw new Error("Latitude is not valid");
+            }
+          },
+        },
+      },
+      lng: {
+        type: DataTypes.DECIMAL,
+        validate: {
+          inRange(value) {
+            if (value < -180 || value > 180 || typeof value !== "number") {
+              throw new Error("Longitude is not valid");
+            }
+          },
+        },
+      },
+      name: {
+        type: DataTypes.STRING,
+
+        validate: {
+          lessThan50Chars(value) {
+            if (value.length > 49) {
+              throw new Error("Name must be less than 50 characters");
+            }
+          },
+          nameExists(value) {
+            if (value.length < 1 || value === null) {
+              throw new Error("Name required");
+            }
+          },
+        },
+      },
+      description: {
+        type: DataTypes.STRING,
+
+        validate: {
+          notEmpty(value) {
+            if (!value) {
+              throw new Error("Description is required");
+            }
+          },
+        },
+      },
+      price: {
+        type: DataTypes.DECIMAL,
+
+        validate: {
+          notEmpty(value) {
+            if (!value) {
+              throw new Error("Price per day is required");
+            }
+          },
+        },
+      },
     },
     {
       sequelize,
