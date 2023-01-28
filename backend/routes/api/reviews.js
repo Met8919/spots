@@ -1,18 +1,66 @@
 const express = require("express");
 const { Model } = require("sequelize");
-const { User, Review, ReviewImage, Spot } = require("../../db/models");
+const {
+  User,
+  Review,
+  ReviewImage,
+  Spot,
+  SpotImage,
+} = require("../../db/models");
 
 const router = express.Router();
+
+//  ********************************************
+//  ****GET ALL REVIEWS OF THE CURRENT USER*****
+//  ********************************************
 
 router.get("/current", async (req, res) => {
   const userId = req.user.id;
 
   const reviews = await Review.findAll({
     where: { userid: userId },
-    include: [{ model: Spot }, { model: ReviewImage }, { model: User }],
+    include: [
+      {
+        model: Spot,
+        include: {
+          model: SpotImage,
+          as: "previewImage",
+          attributes: ["url"],
+          where: { preview: true },
+        },
+      },
+      { model: ReviewImage, as: "ReviewImage", attributes: ["url",'id'] },
+      {
+        model: User,
+        attributes: {
+          exclude: [
+            "username",
+            "hashedPassword",
+            "email",
+            "createdAt",
+            "updatedAt",
+          ],
+        },
+      },
+    ],
   });
 
-  return res.status(200).json({ Reviews: reviews });
+  if (!reviews) {
+    return res.json(404).json({ message: "user has no reviews" });
+  }
+
+  const reviewsArray = [];
+
+  for (let review of reviews) {
+    review = review.toJSON();
+    review.Spot.previewImage =
+      review.Spot.previewImage[0]?.url || "no preview available";
+    reviewsArray.push(review);
+  }
+
+  // res.json(reviews[0].Spot.previewImage[0].url)
+
+  return res.status(200).json({ Reviews: reviewsArray });
 });
 
 //EDIT A REVIEW
