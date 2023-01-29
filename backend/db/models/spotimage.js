@@ -19,9 +19,30 @@ module.exports = (sequelize, DataTypes) => {
     {
       spotId: {
         type: DataTypes.INTEGER,
+        allowNull: false,
       },
-      url: DataTypes.STRING,
-      preview: DataTypes.BOOLEAN,
+      url: {
+        type: DataTypes.STRING,
+
+        validate: {
+          isNotEmpty(url) {
+            if (!url.length || url === null) {
+              throw new Error("url required");
+            }
+          },
+        },
+      },
+      preview: {
+        type: DataTypes.BOOLEAN,
+        allowNull: false,
+        validate: {
+          isNotEmpty(url) {
+            if (url !== false && url !== true) {
+              throw new Error("preview must be set");
+            }
+          },
+        },
+      },
     },
     {
       sequelize,
