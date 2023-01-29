@@ -29,7 +29,7 @@ router.get("/current", async (req, res) => {
           where: { preview: true },
         },
       },
-      { model: ReviewImage, as: "ReviewImage", attributes: ["url",'id'] },
+      { model: ReviewImage, as: "ReviewImage", attributes: ["url", "id"] },
       {
         model: User,
         attributes: {
@@ -112,7 +112,9 @@ router.post("/:reviewId/images", async (req, res) => {
   return res.status(200).json(newReviewImage);
 });
 
-/// DELETE REVIEW BY ID
+//  **************************************
+//  *********Delete a Review**************
+//  **************************************
 
 router.delete("/:reviewId", async (req, res) => {
   const userId = req.user.id;
@@ -128,7 +130,7 @@ router.delete("/:reviewId", async (req, res) => {
   if (review.userId !== userId) {
     return res.status(403).json({
       message:
-        "Error: Cannot delete review as it was not created by the current user.",
+        "Cannot delete review as it was not created by the current user.",
     });
   }
 

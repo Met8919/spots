@@ -2,9 +2,14 @@ const express = require("express");
 const router = express.Router();
 const { SpotImage, Spot } = require("../../db/models");
 
-router.delete("/:imageId", async (req, res) => {
-  const userId = req.user.dataValues.id;
+//  ********************************************
+//  ***********DELETE A SPOT IMAGE**************
+//  ********************************************
 
+router.delete("/:imageId", async (req, res) => {
+  const userId = req.user.id;
+
+  // Get spot image and join spots table for authorization check
   const spotImage = await SpotImage.findByPk(req.params.imageId, {
     include: { model: Spot },
   });
@@ -15,6 +20,7 @@ router.delete("/:imageId", async (req, res) => {
       statusCode: 404,
     });
 
+    // Check if user making request owns spot
   if (userId !== spotImage.Spot.ownerId) {
     return res.status(403).json({ message: "Must own spot to delete image" });
   }

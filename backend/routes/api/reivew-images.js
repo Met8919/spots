@@ -4,10 +4,18 @@ const router = express.Router();
 
 const { ReviewImage, Review } = require("../../db/models");
 
+router.get("/", async (req, res) => {
+  return res.json({ message: "test" });
+});
+
+//  ********************************************
+//  **********Delete a Review Image*************
+//  ********************************************
+
 router.delete("/:imageId", async (req, res) => {
   const userId = req.user.id;
 
-  console.log(userId);
+
 
   const image = await ReviewImage.findByPk(req.params.imageId, {
     include: { model: Review },
@@ -32,6 +40,8 @@ router.delete("/:imageId", async (req, res) => {
     message: "Successfully deleted",
     statusCode: 200,
   });
+
+ 
 });
 
 module.exports = router;

@@ -12,7 +12,15 @@ const {
 
 const { Op } = require("sequelize");
 
-//Create a Booking from a Spot based on the Spot's id
+//--------------------------------------------------------
+// : CREATE A BOOKING FROM A SPOT BASED ON THE SPOT'S ID
+// : GET ALL BOOKINGS FOR A SPOT BASED ON THE SPOT'S ID
+// : GET ALL SPOTS
+//
+
+//  ************************************************************
+//  *****CREATE A BOOKING FROM A SPOT BASED ON THE SPOT'S ID****
+//  ************************************************************
 
 router.post("/:spotId/bookings", async (req, res) => {
   const userId = req.user.id;
@@ -21,6 +29,7 @@ router.post("/:spotId/bookings", async (req, res) => {
 
   const startDateNum = new Date(startDate).valueOf();
   const endDateNum = new Date(endDate).valueOf();
+  const now = new Date().valueOf();
 
   const spot = await Spot.findByPk(req.params.spotId, {
     include: { model: Booking },
@@ -29,6 +38,14 @@ router.post("/:spotId/bookings", async (req, res) => {
   if (!spot) {
     return res.status(404).json({
       message: "Spot couldn't be found",
+      statusCode: 404,
+    });
+  }
+
+  if (startDateNum <= now) {
+    console.log("should send");
+    return res.status(404).json({
+      message: "Booking must be set to future date",
       statusCode: 404,
     });
   }
@@ -86,7 +103,9 @@ router.post("/:spotId/bookings", async (req, res) => {
   return res.status(200).json(newBooking);
 });
 
-//Get all Bookings for a Spot based on the Spot's id
+//  ************************************************************
+//  *****GET ALL BOOKINGS FOR A SPOT BASED ON THE SPOT'S ID*****
+//  ************************************************************
 
 router.get("/:spotId/bookings", async (req, res) => {
   const userId = req.user.id;
@@ -101,27 +120,48 @@ router.get("/:spotId/bookings", async (req, res) => {
   const options = {};
 
   if (spot.ownerId === userId) {
-    options.include = { model: User };
+    options.include = {
+      model: User,
+      attributes: {
+        exclude: [
+          "username",
+          "email",
+          "hashedPassword",
+          "createdAt",
+          "updatedAt",
+        ],
+      },
+    };
+  } else {
+    options.attributes = {
+      exclude: ["createdAt", "updatedAt", "id", "userId"],
+    };
   }
 
   const bookings = await Booking.findAll({
     where: {
       spotId: req.params.spotId,
     },
+
     ...options,
   });
 
   return res.status(200).json({ Bookings: bookings });
 });
 
-// Get all spots
+//  ********************************************
+//  ************ GET ALL SPOTS *****************
+//  ********************************************
+
 router.get("/", async (req, res) => {
-  let where = {};
-  let pagination = {};
+  const where = {};
+  const pagination = {};
 
-  let { page, size } = req.query;
-  let { minLat, maxLat, minLng, maxLng, minPrice, maxPrice } = req.query;
 
+  const { page, size, minLat, maxLat, minLng, maxLng, minPrice, maxPrice } = req.query;
+
+
+  // query conditionals
   if (minLat) where.lat = { [Op.gte]: minLat };
   if (maxLat) where.lat = { [Op.lte]: maxLat };
   if (minLng) where.lng = { [Op.gte]: minLng };
@@ -129,22 +169,18 @@ router.get("/", async (req, res) => {
   if (minPrice) where.price = { [Op.gte]: minPrice };
   if (maxPrice) where.price = { [Op.lte]: maxPrice };
 
-  let offset;
-  let limit;
+// Within range or set to default
   if (page >= 1 && page <= 10) {
-    offset = page;
+    pagination.offset = page;
   } else {
-    offset = 1;
+    pagination.offset = 1;
   }
 
   if (size >= 1 && size <= 20) {
-    limit = size;
+    pagination.limit = size;
   } else {
-    limit = 20;
+    pagination.limit = 20;
   }
-
-  pagination.limit = limit;
-  pagination.offset = offset;
 
   const allSpots = await Spot.findAll({
     where,
@@ -169,13 +205,12 @@ router.get("/", async (req, res) => {
     let avg = averageRating[0].averageValue.toFixed(2);
 
     spot.dataValues["previewImage"] =
-      previewImage?.url || "No preview available";
+      previewImage?.url || null;
 
-    spot.dataValues["averageRating"] = avg || "No ratings";
+    spot.dataValues["averageRating"] = avg || null;
   }
 
-  // allSpots["page"] = offset;
-  // allSpots["size"] = limit;
+
 
   return res.status(200).json({ spots: allSpots, page: offset, size: limit });
 });
@@ -228,14 +263,11 @@ router.post("/", async (req, res) => {
 
   return res.status(200).json(newSpot);
 });
-//
-//
-/// add image to spot based on spot id
-//
-//
-//
+//  *****************************************************
+//  ****ADD AN IMAGE TO A SPOT BASED ON THE SPOT'S ID****
+//  *****************************************************
 router.post("/:spotId/images", async (req, res) => {
-  const userId = parseInt(req.user.dataValues.id);
+  const userId = req.user.id;
 
   const spot = await Spot.findByPk(req.params.spotId);
 
@@ -248,16 +280,16 @@ router.post("/:spotId/images", async (req, res) => {
   if (spot.ownerId !== userId)
     return res.status(403).json({ message: "must own spot to add image" });
 
-  let newSpotImage = await SpotImage.create({
+  const { id, url, preview } = await SpotImage.create({
     ...req.body,
     spotId: req.params.spotId,
   });
-  return res.status(200).json({ newSpotImage });
+  return res.status(200).json({ id, url, preview });
 });
 
-//  ********************************************
-//  **************DELETE A SPOT*****************
-//  ********************************************
+//  ********************************************2222
+//  **************DELETE A SPOT*****************2222
+//  ********************************************2222
 
 router.delete("/:spotId", async (req, res) => {
   const userId = req.user.id;
@@ -431,10 +463,19 @@ router.get("/:spotId", async (req, res) => {
         model: User,
         as: "owner",
         attributes: {
-          exclude: ["username", "hashedPassword", "createdAt", "updatedAt",'email'],
+          exclude: [
+            "username",
+            "hashedPassword",
+            "createdAt",
+            "updatedAt",
+            "email",
+          ],
         },
       },
-      { model: SpotImage, attributes: { exclude: ["createdAt", "updatedAt",'spotId'] } },
+      {
+        model: SpotImage,
+        attributes: { exclude: ["createdAt", "updatedAt", "spotId"] },
+      },
       { model: Review, attributes: [] },
     ],
 
