@@ -157,9 +157,8 @@ router.get("/", async (req, res) => {
   const where = {};
   const pagination = {};
 
-
-  const { page, size, minLat, maxLat, minLng, maxLng, minPrice, maxPrice } = req.query;
-
+  const { page, size, minLat, maxLat, minLng, maxLng, minPrice, maxPrice } =
+    req.query;
 
   // query conditionals
   if (minLat) where.lat = { [Op.gte]: minLat };
@@ -169,7 +168,7 @@ router.get("/", async (req, res) => {
   if (minPrice) where.price = { [Op.gte]: minPrice };
   if (maxPrice) where.price = { [Op.lte]: maxPrice };
 
-// Within range or set to default
+  // Within range or set to default
   if (page >= 1 && page <= 10) {
     pagination.offset = page;
   } else {
@@ -204,13 +203,10 @@ router.get("/", async (req, res) => {
 
     let avg = averageRating[0].averageValue.toFixed(2);
 
-    spot.dataValues["previewImage"] =
-      previewImage?.url || null;
+    spot.dataValues["previewImage"] = previewImage?.url || null;
 
     spot.dataValues["averageRating"] = avg || null;
   }
-
-
 
   return res.status(200).json({ spots: allSpots, page: offset, size: limit });
 });
@@ -280,11 +276,28 @@ router.post("/:spotId/images", async (req, res) => {
   if (spot.ownerId !== userId)
     return res.status(403).json({ message: "must own spot to add image" });
 
-  const { id, url, preview } = await SpotImage.create({
-    ...req.body,
-    spotId: req.params.spotId,
-  });
-  return res.status(200).json({ id, url, preview });
+  try {
+    const { id, url, preview } = await SpotImage.create({
+      ...req.body,
+      spotId: req.params.spotId,
+    });
+
+    return res.status(200).json({ id, url, preview });
+  } catch (err) {
+    const errors = {};
+
+    for (let i = 0; i < err.errors.length; i++) {
+      let property = err.errors[i].message.split(" ")[0];
+      property = property.toLowerCase();
+      errors[property] = err.errors[i].message;
+    }
+
+    return res.status(400).json({
+      statusCode: 400,
+      message: "validation error",
+      errors: errors,
+    });
+  }
 });
 
 //  ********************************************2222

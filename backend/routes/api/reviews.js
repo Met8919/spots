@@ -92,7 +92,9 @@ router.put("/:reviewId", async (req, res) => {
   return res.status(200).json(editedReview);
 });
 
-// Add an Image to a Review based on the Review's id
+//  ********************************************************
+//  ***ADD AN IMAGE TO A REVIEW BASED ON THE REVIEW'S ID****
+//  ********************************************************
 
 router.post("/:reviewId/images", async (req, res) => {
   const userId = req.user.id;
@@ -101,15 +103,39 @@ router.post("/:reviewId/images", async (req, res) => {
 
   const review = await Review.findByPk(req.params.reviewId);
 
+  if (!review) {
+    return res.status(404).json({
+      message: "Review couldn't be found",
+      statusCode: 404,
+    });
+  }
+
   if (review.userId !== userId) {
     return res
       .status(403)
       .json({ message: "can not add image to review you did not create" });
   }
 
-  const newReviewImage = await Review.create({ url, userId });
+  const reviewImageTotal = await ReviewImage.count({
+    where: { reviewId: req.params.reviewId },
+  });
 
-  return res.status(200).json(newReviewImage);
+  if (reviewImageTotal >= 10) {
+    return res.status(403).json({
+      message: "Maximum number of images for this resource was reached",
+      statusCode: 403,
+    });
+  }
+
+  const newReviewImage = await ReviewImage.create({
+    url,
+    userId,
+    reviewId: req.params.reviewId,
+  });
+
+  return res
+    .status(200)
+    .json({ url: newReviewImage.url, id: newReviewImage.id });
 });
 
 //  **************************************
