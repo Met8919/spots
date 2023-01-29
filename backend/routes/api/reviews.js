@@ -63,7 +63,9 @@ router.get("/current", async (req, res) => {
   return res.status(200).json({ Reviews: reviewsArray });
 });
 
-//EDIT A REVIEW
+//  *******************************************
+//  ************ EDIT A REVIEW ****************
+//  *******************************************
 
 router.put("/:reviewId", async (req, res) => {
   const userId = req.user.id;
@@ -81,15 +83,37 @@ router.put("/:reviewId", async (req, res) => {
 
   if (reviewToEdit.userId !== userId) {
     res.status(403).json({
-      message:
-        "Error: Cannot edit review as it was not created by the current user.",
+      message: "Can not edit review you did not create",
     });
   }
 
-  await reviewToEdit.update({ review, stars });
-  const editedReview = await Review.findByPk(req.params.reviewId);
+  try {
+    await reviewToEdit.update({ review, stars });
 
-  return res.status(200).json(editedReview);
+    const editedReview = await Review.findByPk(req.params.reviewId);
+
+    return res.status(200).json(editedReview);
+  } catch (err) {
+    const errors = {};
+
+    for (let i = 0; i < err.errors.length; i++) {
+      let property = err.errors[i].message.split(" ")[0];
+
+      if (property === "Street") {
+        property = "address";
+      } else {
+        property = property.toLowerCase();
+      }
+
+      errors[property] = err.errors[i].message;
+    }
+
+    return res.status(400).json({
+      statusCode: 400,
+      message: "validation error",
+      errors: errors,
+    });
+  }
 });
 
 //  ********************************************************
