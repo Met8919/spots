@@ -32,8 +32,26 @@ module.exports = (sequelize, DataTypes) => {
       },
       spotId: DataTypes.INTEGER,
       userId: DataTypes.INTEGER,
-      review: DataTypes.STRING,
-      stars: DataTypes.INTEGER,
+      review: {
+        type: DataTypes.STRING,
+        validate: {
+          valid(text) {
+            if (!text.length) {
+              throw new Error("Review text is required");
+            }
+          },
+        },
+      },
+      stars: {
+        type: DataTypes.INTEGER,
+        validate: {
+          valid(stars) {
+            if (stars < 1 || stars > 5) {
+              throw new Error("Stars must be an integer from 1 to 5");
+            }
+          },
+        },
+      },
     },
     {
       sequelize,

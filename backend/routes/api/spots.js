@@ -387,14 +387,19 @@ router.post("/:spotId/reviews", async (req, res) => {
   return res.status(201).json(newRreview);
 });
 
-// GET ALL REVIEWS BY SPOTS ID
+//  ********************************************
+//  *******GET ALL REVIEWS BY SPOTS ID**********
+//  ********************************************
 
 router.get("/:spotId/reviews", async (req, res) => {
   const userId = req.user.id;
 
   const reviews = await Review.findAll({
     where: { spotId: req.params.spotId },
-    include: [{ model: ReviewImage }, { model: User }],
+    include: [
+      { model: ReviewImage, attributes: ["id", "url"] },
+      { model: User, attributes: ["id", "firstname", "lastname"] },
+    ],
   });
 
   if (!reviews) {
@@ -439,6 +444,7 @@ router.put("/:spotId", async (req, res) => {
 
   try {
     await spot.update({ ...values });
+    return res.status(200).json(spot);
   } catch (err) {
     const errors = {};
 
@@ -460,8 +466,6 @@ router.put("/:spotId", async (req, res) => {
       errors: errors,
     });
   }
-
-  return res.status(200).json(spot);
 });
 
 //  ********************************************
