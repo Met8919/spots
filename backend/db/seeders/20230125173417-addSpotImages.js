@@ -52,6 +52,46 @@ module.exports = {
           url: "image url",
           preview: true,
         },
+        {
+          spotId: 7,
+          url: "image url",
+          preview: true,
+        },
+        {
+          spotId: 8,
+          url: "image url",
+          preview: true,
+        },
+        {
+          spotId: 9,
+          url: "image url",
+          preview: true,
+        },
+        {
+          spotId: 10,
+          url: "image url",
+          preview: true,
+        },
+        {
+          spotId: 11,
+          url: "image url",
+          preview: true,
+        },
+        {
+          spotId: 12,
+          url: "image url",
+          preview: true,
+        },
+        {
+          spotId: 13,
+          url: "image url",
+          preview: true,
+        },
+        {
+          spotId: 14,
+          url: "image url",
+          preview: true,
+        },
       ],
       {}
     );
