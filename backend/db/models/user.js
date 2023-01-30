@@ -66,7 +66,13 @@ module.exports = (sequelize, DataTypes) => {
         type: DataTypes.STRING,
         allowNull: false,
         validate: {
-          len: [4, 30],
+
+          length(value) {
+            if (value < 4 || value > 30) {
+              throw new Error("Please provide a username with at least 4 characters.")
+            }
+          },
+
           isNotEmail(value) {
             if (Validator.isEmail(value)) {
               throw new Error("Cannot be an email.");
@@ -76,9 +82,23 @@ module.exports = (sequelize, DataTypes) => {
       },
       firstName: {
         type: DataTypes.STRING,
+        validate: {
+          valid(name) {
+            if (!name) {
+              throw new Error('First name is required')
+            }
+          }
+        }
       },
       lastName: {
         type: DataTypes.STRING,
+        validate: {
+          valid(name) {
+            if (!name) {
+              throw new Error('Last name is required')
+            }
+          }
+        }
       },
       email: {
         type: DataTypes.STRING,
