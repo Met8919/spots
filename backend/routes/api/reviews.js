@@ -50,20 +50,20 @@ router.get("/current", requireAuth, async (req, res) => {
     return res.json(404).json({ message: "user has no reviews" });
   }
 
-  const reviewsArray = [];
+  // const reviewsArray = [];
 
-  for (let review of reviews) {
-    review = review.toJSON();
+  // for (let review of reviews) {
+  //   review = review.toJSON();
 
-    
 
-    review.Spot.previewImage = review.Spot?.previewImage[0]?.url || null;
-    reviewsArray.push(review);
-  }
+
+  //   review.Spot.previewImage = review.Spot?.previewImage[0]?.url || null;
+  //   reviewsArray.push(review);
+  // }
 
   // res.json(reviews[0].Spot.previewImage[0].url)
 
-  return res.status(200).json({ Reviews: reviewsArray });
+  return res.status(200).json({ Reviews: reviews });
 });
 
 //  *******************************************
