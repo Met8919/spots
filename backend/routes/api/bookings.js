@@ -77,7 +77,7 @@ router.get("/current", requireAuth, async (req, res) => {
   for (let booking of bookings) {
     booking = booking.toJSON();
 
-    booking.Spot.previewImage = booking.Spot.previewImage[0].url;
+    booking.Spot.previewImage = booking.Spot.previewImage[0]?.url || null;
 
     bookingsArray.push(booking);
   }

@@ -24,18 +24,11 @@ const validateSignup = [
   handleValidationErrors,
 ];
 
-router.post("/",  async (req, res) => {
+router.post("/", async (req, res) => {
   const { email, password, username, firstName, lastName } = req.body;
 
-
-  //
-  const eMail = await User.findOne({
-    where: {  email: email  },
-  });
+  const eMail = await User.findOne({ where: { email: email } });
   const userName = await User.findOne({ where: { username: username } });
-
-
-    console.log(eMail)
 
   if (eMail) {
     return res.status(403).json({
@@ -57,6 +50,8 @@ router.post("/",  async (req, res) => {
   }
 
   try {
+
+
     const user = await User.signup({
       email,
       username,
@@ -66,21 +61,23 @@ router.post("/",  async (req, res) => {
     });
 
     await setTokenCookie(res, user);
-
     return res.json({
       user: user,
     });
-  } catch (err) {
-    const errors = {};
 
+
+  } catch (err) {
+
+
+    const errors = {};
     for (let i = 0; i < err.errors.length; i++) {
       let property = err.errors[i].message.split(" ")[0];
 
       if (property === "First") {
         property = "firstName";
       }
-      if (property === 'Please') {
-        property = 'username'
+      if (property === "Please") {
+        property = "username";
       }
 
       property = property.toLowerCase();
@@ -92,6 +89,8 @@ router.post("/",  async (req, res) => {
       message: "validation error",
       errors: errors,
     });
+
+    
   }
 });
 

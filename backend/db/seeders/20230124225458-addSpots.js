@@ -360,7 +360,7 @@ module.exports = {
     return queryInterface.bulkDelete(
       options,
       {
-        ownerId: { [Op.gt]: 0 },
+        ownerId: { [Op.gte]: 1 },
       },
       {}
     );

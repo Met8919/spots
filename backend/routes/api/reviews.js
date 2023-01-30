@@ -19,7 +19,7 @@ router.get("/current", requireAuth, async (req, res) => {
   const userId = req.user.id;
 
   const reviews = await Review.findAll({
-    where: { userid: userId },
+    where: { userId: userId },
     include: [
       {
         model: Spot,
@@ -54,6 +54,7 @@ router.get("/current", requireAuth, async (req, res) => {
 
   for (let review of reviews) {
     review = review.toJSON();
+
     review.Spot.previewImage =
       review.Spot.previewImage[0]?.url || "no preview available";
     reviewsArray.push(review);
