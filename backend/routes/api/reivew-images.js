@@ -3,6 +3,7 @@ const express = require("express");
 const router = express.Router();
 
 const { ReviewImage, Review } = require("../../db/models");
+const { requireAuth } = require("../../utils/auth");
 
 router.get("/", async (req, res) => {
   return res.json({ message: "test" });
@@ -12,10 +13,8 @@ router.get("/", async (req, res) => {
 //  **********Delete a Review Image*************
 //  ********************************************
 
-router.delete("/:imageId", async (req, res) => {
+router.delete("/:imageId", requireAuth, async (req, res) => {
   const userId = req.user.id;
-
-
 
   const image = await ReviewImage.findByPk(req.params.imageId, {
     include: { model: Review },
@@ -40,8 +39,6 @@ router.delete("/:imageId", async (req, res) => {
     message: "Successfully deleted",
     statusCode: 200,
   });
-
- 
 });
 
 module.exports = router;

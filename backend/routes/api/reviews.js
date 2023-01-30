@@ -7,6 +7,7 @@ const {
   Spot,
   SpotImage,
 } = require("../../db/models");
+const { requireAuth } = require("../../utils/auth");
 
 const router = express.Router();
 
@@ -14,7 +15,7 @@ const router = express.Router();
 //  ****GET ALL REVIEWS OF THE CURRENT USER*****
 //  ********************************************
 
-router.get("/current", async (req, res) => {
+router.get("/current", requireAuth, async (req, res) => {
   const userId = req.user.id;
 
   const reviews = await Review.findAll({
@@ -67,7 +68,7 @@ router.get("/current", async (req, res) => {
 //  ************ EDIT A REVIEW ****************
 //  *******************************************
 
-router.put("/:reviewId", async (req, res) => {
+router.put("/:reviewId", requireAuth, async (req, res) => {
   const userId = req.user.id;
 
   const reviewToEdit = await Review.findByPk(req.params.reviewId);
@@ -120,7 +121,7 @@ router.put("/:reviewId", async (req, res) => {
 //  ***ADD AN IMAGE TO A REVIEW BASED ON THE REVIEW'S ID****
 //  ********************************************************
 
-router.post("/:reviewId/images", async (req, res) => {
+router.post("/:reviewId/images", requireAuth, async (req, res) => {
   const userId = req.user.id;
 
   const { url } = req.body;
@@ -166,7 +167,7 @@ router.post("/:reviewId/images", async (req, res) => {
 //  *********Delete a Review**************
 //  **************************************
 
-router.delete("/:reviewId", async (req, res) => {
+router.delete("/:reviewId", requireAuth, async (req, res) => {
   const userId = req.user.id;
 
   const review = await Review.findByPk(req.params.reviewId);
