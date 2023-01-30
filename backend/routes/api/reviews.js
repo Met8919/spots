@@ -52,18 +52,18 @@ router.get("/current", requireAuth, async (req, res) => {
 
   const reviewsArray = [];
 
-  // for (let review of reviews) {
-  //   review = review.toJSON();
+  for (let review of reviews) {
+    review = review.toJSON();
 
-  //   console.log(review.Spot)
+    
 
-  //   review.Spot.previewImage = review.Spot.previewImage[0]?.url || null;
-  //   reviewsArray.push(review);
-  // }
+    review.Spot.previewImage = review.Spot?.previewImage[0]?.url || null;
+    reviewsArray.push(review);
+  }
 
   // res.json(reviews[0].Spot.previewImage[0].url)
 
-  return res.status(200).json({ Reviews: reviews });
+  return res.status(200).json({ Reviews: reviewsArray });
 });
 
 //  *******************************************
