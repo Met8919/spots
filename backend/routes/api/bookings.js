@@ -2,6 +2,7 @@ const express = require("express");
 const { Booking, User, Spot, SpotImage } = require("../../db/models");
 const spot = require("../../db/models/spot");
 const user = require("../../db/models/user");
+const { requireAuth } = require("../../utils/auth");
 
 const router = express.Router();
 
@@ -9,7 +10,7 @@ const router = express.Router();
 //  ************ DELETE BOOKING ****************
 //  ********************************************
 
-router.delete("/:bookingId", async (req, res) => {
+router.delete("/:bookingId", requireAuth, async (req, res) => {
   const userId = req.user.id;
 
   const bookingToDelete = await Booking.findByPk(req.params.bookingId);
@@ -49,7 +50,7 @@ router.delete("/:bookingId", async (req, res) => {
 //  **** GET ALL BOOKINGS OF CURRENT USER ******
 //  ********************************************
 
-router.get("/current", async (req, res) => {
+router.get("/current", requireAuth, async (req, res) => {
   const userId = req.user.id;
 
   const bookings = await Booking.findAll({
@@ -88,7 +89,7 @@ router.get("/current", async (req, res) => {
 //  ************ EDIT BOOKING ******************
 //  ********************************************
 
-router.put("/:bookingId", async (req, res) => {
+router.put("/:bookingId", requireAuth, async (req, res) => {
   const userId = req.user.id;
   const { startDate, endDate } = req.body;
 
@@ -140,7 +141,6 @@ router.put("/:bookingId", async (req, res) => {
 
   const startDateNum = new Date(startDate).valueOf();
   const endDateNum = new Date(endDate).valueOf();
-
 
   //CHECK IF EDITED DATE OVERLAPS WITH OTHER BOOKINGS
   for (let booking of bookings) {

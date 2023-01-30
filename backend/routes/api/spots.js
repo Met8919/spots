@@ -11,6 +11,7 @@ const {
 } = require("../../db/models");
 
 const { Op } = require("sequelize");
+const { requireAuth } = require("../../utils/auth");
 
 //--------------------------------------------------------
 // : CREATE A BOOKING FROM A SPOT BASED ON THE SPOT'S ID
@@ -22,7 +23,7 @@ const { Op } = require("sequelize");
 //  *****CREATE A BOOKING FROM A SPOT BASED ON THE SPOT'S ID****
 //  ************************************************************
 
-router.post("/:spotId/bookings", async (req, res) => {
+router.post("/:spotId/bookings", requireAuth, async (req, res) => {
   const userId = req.user.id;
 
   const { startDate, endDate } = req.body;
@@ -107,7 +108,7 @@ router.post("/:spotId/bookings", async (req, res) => {
 //  *****GET ALL BOOKINGS FOR A SPOT BASED ON THE SPOT'S ID*****
 //  ************************************************************
 
-router.get("/:spotId/bookings", async (req, res) => {
+router.get("/:spotId/bookings", requireAuth, async (req, res) => {
   const userId = req.user.id;
   const spot = await Spot.findByPk(req.params.spotId);
 
@@ -246,13 +247,12 @@ router.get("/", async (req, res) => {
     //   }
     // );
 
-    const reviewCount = await Review.count({where: {spotId: spotId}})
-    const sum = await Review.sum('stars', {
-      where: {spotId: spotId}
-    })
+    const reviewCount = await Review.count({ where: { spotId: spotId } });
+    const sum = await Review.sum("stars", {
+      where: { spotId: spotId },
+    });
 
-    const averageRating = sum/reviewCount
-
+    const averageRating = sum / reviewCount;
 
     if (averageRating) {
       avg = averageRating.toFixed(2);
@@ -270,7 +270,7 @@ router.get("/", async (req, res) => {
 //  ************ CREATE A SPOT *****************
 //  ********************************************
 
-router.post("/", async (req, res) => {
+router.post("/", requireAuth, async (req, res) => {
   let newSpot;
 
   const spotValues = ({
@@ -317,7 +317,7 @@ router.post("/", async (req, res) => {
 //  *****************************************************
 //  ****ADD AN IMAGE TO A SPOT BASED ON THE SPOT'S ID****
 //  *****************************************************
-router.post("/:spotId/images", async (req, res) => {
+router.post("/:spotId/images", requireAuth, async (req, res) => {
   const userId = req.user.id;
 
   const spot = await Spot.findByPk(req.params.spotId);
@@ -359,7 +359,7 @@ router.post("/:spotId/images", async (req, res) => {
 //  **************DELETE A SPOT*****************2222
 //  ********************************************2222
 
-router.delete("/:spotId", async (req, res) => {
+router.delete("/:spotId", requireAuth, async (req, res) => {
   const userId = req.user.id;
 
   const spot = await Spot.findByPk(req.params.spotId);
@@ -387,7 +387,7 @@ router.delete("/:spotId", async (req, res) => {
 //  **GET ALL SPOTS OWNED BY THE CURRENT USER***
 //  ********************************************
 
-router.get("/current", async (req, res) => {
+router.get("/current", requireAuth, async (req, res) => {
   const userId = req.user.id;
 
   const spots = await Spot.findAll({
@@ -429,7 +429,7 @@ router.get("/current", async (req, res) => {
 //  *****CREATE A REVIEW FOR A SPOT BASED ON THE SPOT'S ID****
 //  **********************************************************
 
-router.post("/:spotId/reviews", async (req, res) => {
+router.post("/:spotId/reviews", requireAuth, async (req, res) => {
   const userId = req.user.id;
   let { review, stars } = req.body;
   stars = Number(stars);
@@ -483,7 +483,7 @@ router.post("/:spotId/reviews", async (req, res) => {
 //  *******GET ALL REVIEWS BY SPOTS ID**********
 //  ********************************************
 
-router.get("/:spotId/reviews", async (req, res) => {
+router.get("/:spotId/reviews", requireAuth, async (req, res) => {
   const userId = req.user.id;
 
   const reviews = await Review.findAll({
@@ -508,7 +508,7 @@ router.get("/:spotId/reviews", async (req, res) => {
 //  ***************EDIT A SPOT******************
 //  ********************************************
 
-router.put("/:spotId", async (req, res) => {
+router.put("/:spotId", requireAuth, async (req, res) => {
   const userId = req.user.dataValues.id;
 
   const spot = await Spot.findByPk(req.params.spotId);
