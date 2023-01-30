@@ -156,9 +156,50 @@ router.get("/:spotId/bookings", async (req, res) => {
 router.get("/", async (req, res) => {
   const where = {};
   const pagination = {};
+  let offset, limit, avg;
+
+  let values = req.query;
+
+  for (let val in values) {
+    values[val] = Number(values[val]);
+  }
 
   const { page, size, minLat, maxLat, minLng, maxLng, minPrice, maxPrice } =
-    req.query;
+    values;
+
+  let errors = {};
+  if (page < 1) {
+    errors.page = "Page must be greater than or equal to 1";
+  }
+  if (size < 1) {
+    errors.size = "Size must be greater than or equal to 1";
+  }
+  if (maxLat < -90 || maxLat > 90) {
+    errors.maxLat = "Maximum latitude is invalid";
+  }
+  if (minLat < -90 || minLat > 90) {
+    errors.minLat = "Minimum latitude is invalid";
+  }
+  if (maxLng < -180 || maxLng > 180) {
+    errors.maxLng = "Maximum longitude is invalid";
+  }
+  if (minLng < -180 || minLng > 180) {
+    errors.minLng = "Minimum longitude is invalid";
+  }
+  if (maxPrice < 0) {
+    errors.maxPrice = "Maximum price must be greater than or equal to 0";
+  }
+  if (minPrice < 0) {
+    errors.minPrice = "Minimum price must be greater than or equal to 0";
+  }
+
+  if (Object.keys(errors).length) {
+    return res.status(400).json({
+      message: "Validation Error",
+      statusCode: 400,
+      errors,
+    });
+  }
 
   // query conditionals
   if (minLat) where.lat = { [Op.gte]: minLat };
@@ -171,14 +212,18 @@ router.get("/", async (req, res) => {
   // Within range or set to default
   if (page >= 1 && page <= 10) {
     pagination.offset = page;
+    offset = page;
   } else {
     pagination.offset = 1;
+    offset = 1;
   }
 
   if (size >= 1 && size <= 20) {
     pagination.limit = size;
+    limit = size;
   } else {
     pagination.limit = 20;
+    limit = 20;
   }
 
   const allSpots = await Spot.findAll({
@@ -201,11 +246,13 @@ router.get("/", async (req, res) => {
       }
     );
 
-    let avg = averageRating[0].averageValue.toFixed(2);
+    if (averageRating[0].averageValue) {
+      avg = averageRating[0].averageValue.toFixed(2);
+    }
 
-    spot.dataValues["previewImage"] = previewImage?.url || null;
+    spot.dataValues.previewImage = previewImage?.url || null;
 
-    spot.dataValues["averageRating"] = avg || null;
+    spot.dataValues.avgRating = avg || null;
   }
 
   return res.status(200).json({ spots: allSpots, page: offset, size: limit });
@@ -370,7 +417,9 @@ router.get("/current", async (req, res) => {
   return res.status(200).json({ Spots: spotsArray });
 });
 
-//Create a Review for a Spot based on the Spot's id
+//  **********************************************************
+//  *****CREATE A REVIEW FOR A SPOT BASED ON THE SPOT'S ID****
+//  **********************************************************
 
 router.post("/:spotId/reviews", async (req, res) => {
   const userId = req.user.id;
@@ -378,13 +427,48 @@ router.post("/:spotId/reviews", async (req, res) => {
   stars = Number(stars);
   const spotId = Number(req.params.spotId);
 
-  if (stars < 1 || stars > 5) {
-    return res.status(400).json({ message: "stars must be between 1 and 5" });
+  const spot = await Spot.findByPk(req.params.spotId);
+
+  if (!spot) {
+    return res.status(404).json({
+      message: "Spot couldn't be found",
+      statusCode: 404,
+    });
   }
 
-  const newRreview = await Review.create({ review, stars, userId, spotId });
+  const postedReview = await Review.findOne({
+    where: {
+      spotId: req.params.spotId,
+      userId: userId,
+    },
+  });
 
-  return res.status(201).json(newRreview);
+  if (postedReview) {
+    return res.status(403).json({
+      message: "User already has a review for this spot",
+      statusCode: 403,
+    });
+  }
+
+  try {
+    const newRreview = await Review.create({ review, stars, userId, spotId });
+
+    return res.status(201).json(newRreview);
+  } catch (err) {
+    const errors = {};
+
+    for (let i = 0; i < err.errors.length; i++) {
+      let property = err.errors[i].message.split(" ")[0];
+      property = property.toLowerCase();
+      errors[property] = err.errors[i].message;
+    }
+
+    return res.status(400).json({
+      statusCode: 400,
+      message: "validation error",
+      errors: errors,
+    });
+  }
 });
 
 //  ********************************************
