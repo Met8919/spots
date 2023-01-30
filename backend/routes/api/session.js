@@ -19,7 +19,7 @@ const { handleValidationErrors } = require("../../utils/validation");
 router.post("/", async (req, res, next) => {
   const { credential, password } = req.body;
 
-  console.log('!!!!!!!!!!!!!!!!!!')
+  console.log("!!!!!!!!!!!!!!!!!!");
 
   const errors = {};
 
@@ -63,7 +63,14 @@ router.get("/", restoreUser, (req, res) => {
   const { user } = req;
   if (user) {
     return res.json({
-      user: user.toSafeObject(),
+      // user: user.toSafeObject(),
+      user: {
+        id: user.id,
+        firstName: user.firstName,
+        lastName: user.lastName,
+        email: user.email,
+        username: user.username,
+      },
     });
   } else return res.json({ user: null });
 });
