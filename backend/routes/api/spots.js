@@ -238,16 +238,24 @@ router.get("/", async (req, res) => {
     });
 
     const spotId = spot.dataValues.id;
-    const averageRating = await sequelize.query(
-      "SELECT AVG(stars) as averageValue FROM Reviews WHERE spotId = :spotId",
-      {
-        replacements: { spotId: spotId },
-        type: sequelize.QueryTypes.SELECT,
-      }
-    );
+    // const averageRating = await sequelize.query(
+    //   "SELECT AVG(stars) as averageValue FROM Reviews WHERE spotId = :spotId",
+    //   {
+    //     replacements: { spotId: spotId },
+    //     type: sequelize.QueryTypes.SELECT,
+    //   }
+    // );
 
-    if (averageRating[0].averageValue) {
-      avg = averageRating[0].averageValue.toFixed(2);
+    const reviewCount = await Review.count({where: {spotId: spotId}})
+    const sum = await Review.sum('stars', {
+      where: {spotId: spotId}
+    })
+
+    const averageRating = sum/reviewCount
+
+
+    if (averageRating) {
+      avg = averageRating.toFixed(2);
     }
 
     spot.dataValues.previewImage = previewImage?.url || null;

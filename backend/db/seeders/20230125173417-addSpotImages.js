@@ -103,7 +103,7 @@ module.exports = {
     return queryInterface.bulkDelete(
       options,
       {
-        spotId: { [Op.gt]: [0] },
+        spotId: { [Op.gt]: 0 },
       },
       {}
     );
