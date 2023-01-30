@@ -19,7 +19,7 @@ const { handleValidationErrors } = require("../../utils/validation");
 router.post("/", async (req, res, next) => {
   const { credential, password } = req.body;
 
-  console.log("!!!!!!!!!!!!!!!!!!");
+  
 
   const errors = {};
 
