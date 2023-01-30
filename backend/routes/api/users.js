@@ -2,9 +2,10 @@ const express = require("express");
 const router = express.Router();
 const { setTokenCookie, requireAuth } = require("../../utils/auth");
 const { User } = require("../../db/models");
-
+const { Op } = require("sequelize");
 const { check } = require("express-validator");
 const { handleValidationErrors } = require("../../utils/validation");
+const user = require("../../db/models/user");
 
 const validateSignup = [
   check("email")
@@ -23,21 +24,75 @@ const validateSignup = [
   handleValidationErrors,
 ];
 
-router.post("/", validateSignup, async (req, res) => {
+router.post("/",  async (req, res) => {
   const { email, password, username, firstName, lastName } = req.body;
-  const user = await User.signup({
-    email,
-    username,
-    password,
-    firstName,
-    lastName,
-  });
 
-  await setTokenCookie(res, user);
 
-  return res.json({
-    user: user,
+  //
+  const eMail = await User.findOne({
+    where: {  email: email  },
   });
+  const userName = await User.findOne({ where: { username: username } });
+
+
+    console.log(eMail)
+
+  if (eMail) {
+    return res.status(403).json({
+      message: "User already exists",
+      statusCode: 403,
+      errors: {
+        email: "User with that email already exists",
+      },
+    });
+  }
+  if (userName) {
+    return res.status(403).json({
+      message: "User already exists",
+      statusCode: 403,
+      errors: {
+        email: "User with that username already exists",
+      },
+    });
+  }
+
+  try {
+    const user = await User.signup({
+      email,
+      username,
+      password,
+      firstName,
+      lastName,
+    });
+
+    await setTokenCookie(res, user);
+
+    return res.json({
+      user: user,
+    });
+  } catch (err) {
+    const errors = {};
+
+    for (let i = 0; i < err.errors.length; i++) {
+      let property = err.errors[i].message.split(" ")[0];
+
+      if (property === "First") {
+        property = "firstName";
+      }
+      if (property === 'Please') {
+        property = 'username'
+      }
+
+      property = property.toLowerCase();
+      errors[property] = err.errors[i].message;
+    }
+
+    return res.status(400).json({
+      statusCode: 400,
+      message: "validation error",
+      errors: errors,
+    });
+  }
 });
 
 module.exports = router;
