@@ -20,9 +20,9 @@ router.use("/reviews", reviewsRouter);
 router.use("/review-images", reviewImagesRouter);
 router.use("/bookings", bookingsRouter);
 
-// router.post("/test", function (req, res) {
-//   res.json({ requestBody: req.body });
-// });
+router.post("/test", function (req, res) {
+  res.json({ requestBody: req.body });
+});
 
 // // GET /api/set-token-cookie
 // const { User } = require("../../db/models");
