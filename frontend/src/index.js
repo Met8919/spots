@@ -1,27 +1,18 @@
 import React from 'react';
 
-// import './index.css';
+import './index.css';
 
 import ReactDOM from 'react-dom';
 import { Provider } from 'react-redux';
 import { BrowserRouter } from 'react-router-dom';
-import { csrfFetch } from './store/csrf';
-import { restoreCSRF } from './store/csrf';
 import App from './App';
-import * as sessionActions from './store/session';
 
 import configureStore from './store';
-
-
 
 const store = configureStore();
 
 if (process.env.NODE_ENV !== 'production') {
-  restoreCSRF();
-
-  window.csrfFetch = csrfFetch;
   window.store = store;
-  window.sessionActions = sessionActions;
 }
 
 function Root() {
@@ -35,8 +26,7 @@ function Root() {
 }
 
 
-
-const root = ReactDOM.createRoot(document.getElementById("root"));
+const root = ReactDOM.createRoot(document.getElementById('root'));
 root.render(
   <React.StrictMode>
     <Root />
