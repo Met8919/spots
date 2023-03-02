@@ -5,8 +5,34 @@ const apiRouter = require("./api");
 router.use("/api", apiRouter);
 
 // Static routes
+
 // Serve React build files in production
+router.use((req, res, next) => {
+  console.log(
+    "request hits before if process node env",
+    "this is node_env",
+    process.env.NODE_ENV
+  );
+  next();
+});
+
+console.log(
+  "on file load before if process",
+  "this is process.env",
+  process.env
+);
 if (process.env.NODE_ENV === "production") {
+  console.log(
+    "on file load after if process",
+    "this is process.env",
+    process.env
+  );
+
+  router.use((req, res, next) => {
+    console.log("request hits inside process", process.env.NODE_ENV);
+    next();
+  });
+
   const path = require("path");
   // Serve the frontend's index.html file at the root route
   router.get("/", (req, res) => {
