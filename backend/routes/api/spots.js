@@ -44,7 +44,7 @@ router.post("/:spotId/bookings", requireAuth, async (req, res) => {
   }
 
   if (startDateNum <= now) {
-    console.log("should send");
+    
     return res.status(404).json({
       message: "Booking must be set to future date",
       statusCode: 404,
