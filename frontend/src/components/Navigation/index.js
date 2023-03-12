@@ -1,23 +1,24 @@
-import React from 'react';
-import { NavLink } from 'react-router-dom';
-import { useSelector } from 'react-redux';
-import ProfileButton from './ProfileButton';
-import './Navigation.css';
+import React from "react";
+import { Link, NavLink } from "react-router-dom";
+import { useSelector } from "react-redux";
+import ProfileButton from "./ProfileButton";
+import "./Navigation.css";
 
-function Navigation({ isLoaded }){
-  const sessionUser = useSelector(state => state.session.user);
+function Navigation({ isLoaded }) {
+  const sessionUser = useSelector((state) => state.session.user);
 
   return (
-    <ul>
-      <li>
-        <NavLink exact to="/">Home</NavLink>
-      </li>
-      {isLoaded && (
-        <li>
-          <ProfileButton user={sessionUser} />
-        </li>
-      )}
-    </ul>
+    <div className="navbar-container">
+      <div>Logo</div>
+      <div className="navbar-right">
+        {sessionUser && Object.values(sessionUser).length && (
+          <Link id="manage-spots" to={"/spot-form/new"}>
+            Create a New Spot
+          </Link>
+        )}
+        {isLoaded && <ProfileButton user={sessionUser} />}
+      </div>
+    </div>
   );
 }
 

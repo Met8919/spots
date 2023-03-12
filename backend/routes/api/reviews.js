@@ -54,19 +54,11 @@ router.get("/current", requireAuth, async (req, res) => {
 
   for (let review of reviews) {
     review = review.toJSON();
-
     if (review.Spot.previewImage) {
-
       review.Spot.previewImage = review.Spot?.previewImage[0]?.url || null;
       reviewsArray.push(review);
-
     }
-
-
-
-  }
-
-  // res.json(reviews[0].Spot.previewImage[0].url)
+  } // res.json(reviews[0].Spot.previewImage[0].url)
 
   return res.status(200).json({ Reviews: reviewsArray });
 });
