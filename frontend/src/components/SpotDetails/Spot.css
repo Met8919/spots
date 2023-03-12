@@ -1,0 +1,45 @@
+.main-container {
+  max-width: 1300px;
+  margin: auto;
+}
+
+.image-container {
+  display: flex;
+}
+
+.main-image {
+  height: 425px;
+}
+
+.side-image-container {
+  display: grid;
+  grid-template-columns: repeat(2, 1fr);
+  grid-gap: 5px;
+  margin: 0px 5px;
+}
+
+.side-image {
+  height: 210px;
+}
+
+.spot-details-container {
+  display: flex;
+  justify-content: space-between;
+}
+
+.reserve-container {
+  display: flex;
+  flex-direction: column;
+
+  width: 200px;
+  margin-top: 20px;
+  margin-right: 23px;
+  border-radius: 20px;
+  border: 2px solid black;
+  padding: 10px;
+}
+
+.reserve-details-container {
+  display: flex;
+  justify-content: space-between;
+}

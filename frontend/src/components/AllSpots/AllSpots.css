@@ -1,0 +1,29 @@
+.spots-container {
+  display: flex;
+  justify-content: center;
+  /* border: 2px solid red; */
+  flex-wrap: wrap;
+  margin: 30px;
+  max-width: 1700px;
+  margin: 10px auto;
+}
+
+.spots-card {
+  height: 375px;
+  width: 400px;
+  background-color: white;
+  margin: 10px;
+  text-decoration: none;
+}
+
+.spots-card img {
+  max-width: 100%;
+}
+
+.spot-card-info {
+  display: flex;
+  justify-content: space-between;
+  margin: 5px;
+  /* background-color: aliceblue; */
+  font-size: 20px;
+}

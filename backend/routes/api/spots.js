@@ -44,7 +44,6 @@ router.post("/:spotId/bookings", requireAuth, async (req, res) => {
   }
 
   if (startDateNum <= now) {
-    
     return res.status(404).json({
       message: "Booking must be set to future date",
       statusCode: 404,
@@ -263,7 +262,7 @@ router.get("/", async (req, res) => {
     spot.dataValues.avgRating = avg || null;
   }
 
-  return res.status(200).json({ spots: allSpots, page: offset, size: limit });
+  return res.status(200).json({ Spots: allSpots, page: offset, size: limit });
 });
 
 //  ********************************************
@@ -432,6 +431,9 @@ router.get("/current", requireAuth, async (req, res) => {
 router.post("/:spotId/reviews", requireAuth, async (req, res) => {
   const userId = req.user.id;
   let { review, stars } = req.body;
+
+  console.log(review, stars, "ASDASDASDASDSAD");
+
   stars = Number(stars);
   const spotId = Number(req.params.spotId);
 
@@ -510,9 +512,7 @@ router.get("/:spotId/reviews", requireAuth, async (req, res) => {
 
 router.put("/:spotId", requireAuth, async (req, res) => {
   const userId = req.user.dataValues.id;
-
   const spot = await Spot.findByPk(req.params.spotId);
-
   if (!spot)
     return res.status(404).json({
       message: "Spot couldn't be found",
