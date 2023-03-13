@@ -97,7 +97,7 @@ export default function Spot() {
       </div>
 
       <div className="spot-review-container">
-        <h2>{/* {spot.avgStarRating} {spot.numReviews} */}</h2>
+        <h2>{spot.avgStarRating} {spot.numReviews}</h2>
         {sessionUser.user.id !== spot.ownerId && hasNotPostedReview && (
           <OpenModalMenuItem
             itemText="Review"

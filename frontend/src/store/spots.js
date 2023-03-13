@@ -6,11 +6,6 @@ import { csrfFetch } from "./csrf";
 const SET_ALL_SPOTS = "/spots/setAllSpots";
 const SET_SPOT = "/spot/setSpot";
 
-
-
-
-
-
 // Action creators
 
 
@@ -102,17 +97,6 @@ export const getAllSpotsForCurrentUser = () => async (dispatch) => {
 
 
 
-export const getAllSpots = () => async (dispatch) => {
-  const res = await csrfFetch("/api/spots");
-
-  if (res.ok) {
-    const spots = await res.json();
-    dispatch(setAllSpots(spots));
-
-  }
-
-  return res;
-};
 
 
 export const getSpot = (spotId) => async (dispatch) => {
@@ -122,6 +106,17 @@ export const getSpot = (spotId) => async (dispatch) => {
     const spot = await res.json();
 
     dispatch(setSpot(spot));
+  }
+
+  return res;
+};
+export const getAllSpots = () => async (dispatch) => {
+  const res = await csrfFetch("/api/spots");
+
+  if (res.ok) {
+    const spots = await res.json();
+    dispatch(setAllSpots(spots));
+
   }
 
   return res;
@@ -146,8 +141,8 @@ const spotsReducer = (state = initialState, action) => {
       newState.singleSpot = action.spot;
       return newState;
 
-    default:
-      return state;
+      default:
+        return state;
   }
 };
 

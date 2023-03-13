@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import { useDispatch } from "react-redux";
 import { useModal } from "../../context/Modal";
 import * as sessionActions from "../../store/session";
@@ -13,7 +13,30 @@ function SignupFormModal() {
   const [password, setPassword] = useState("");
   const [confirmPassword, setConfirmPassword] = useState("");
   const [errors, setErrors] = useState([]);
+  const [formErrors, setFormErrors] = useState({ disableSignup: true });
   const { closeModal } = useModal();
+
+  useEffect(() => {
+    const inputs = [
+      firstName,
+      lastName,
+      email,
+      username,
+      password,
+      confirmPassword,
+    ];
+
+    for (let input of inputs) {
+      if (!input.length) {
+        setFormErrors({ disableSignup: true });
+        return;
+      }
+    }
+
+    setFormErrors({});
+  }, [firstName, lastName, email, username, password, confirmPassword]);
+
+  console.log(Object.values(formErrors).length);
 
   const handleSubmit = (e) => {
     e.preventDefault();
@@ -31,6 +54,7 @@ function SignupFormModal() {
         .then(closeModal)
         .catch(async (res) => {
           const data = await res.json();
+
           if (data && data.errors) setErrors(data.errors);
         });
     }
@@ -44,7 +68,7 @@ function SignupFormModal() {
       <h1>Sign Up</h1>
       <form onSubmit={handleSubmit} id="signup-form">
         <ul>
-          {errors.map((error, idx) => (
+          {Object.values(errors).map((error, idx) => (
             <li key={idx}>{error}</li>
           ))}
         </ul>
@@ -99,7 +123,13 @@ function SignupFormModal() {
           placeholder="Confirm Password"
           className="signup-input"
         />
-        <button id="signup-button" type="submit">Sign Up</button>
+        <button
+          id="signup-button"
+          type="submit"
+          disabled={Object.values(formErrors).length ? true : false}
+        >
+          Sign Up
+        </button>
       </form>
     </div>
   );

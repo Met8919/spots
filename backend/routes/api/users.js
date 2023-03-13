@@ -27,31 +27,28 @@ const validateSignup = [
 router.post("/", async (req, res) => {
   const { email, password, username, firstName, lastName } = req.body;
 
+  const errors = {};
+
   const eMail = await User.findOne({ where: { email: email } });
   const userName = await User.findOne({ where: { username: username } });
 
   if (eMail) {
-    return res.status(403).json({
-      message: "User already exists",
-      statusCode: 403,
-      errors: {
-        email: "User with that email already exists",
-      },
-    });
+    errors.email = "User with that email already exists";
   }
+
   if (userName) {
+    errors.userName = "User with that username already exists";
+  }
+
+  if (Object.values(errors).length) {
     return res.status(403).json({
-      message: "User already exists",
+      message: "Validation error",
       statusCode: 403,
-      errors: {
-        email: "User with that username already exists",
-      },
+      errors: errors,
     });
   }
 
   try {
-
-
     const user = await User.signup({
       email,
       username,
@@ -64,11 +61,7 @@ router.post("/", async (req, res) => {
     return res.json({
       user: user,
     });
-
-
   } catch (err) {
-
-
     const errors = {};
     for (let i = 0; i < err.errors.length; i++) {
       let property = err.errors[i].message.split(" ")[0];
@@ -89,8 +82,6 @@ router.post("/", async (req, res) => {
       message: "validation error",
       errors: errors,
     });
-
-    
   }
 });
 

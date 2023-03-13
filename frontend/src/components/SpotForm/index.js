@@ -23,34 +23,61 @@ export default function CreateSpot() {
   const [errors, setErrors] = useState({});
   const [displayErrors, setDisplayErrors] = useState(false);
 
-  const {formType} = useParams()
-  const {spotId} = useParams()
-
-
-
+  const { formType } = useParams();
+  const { spotId } = useParams();
 
   const history = useHistory();
 
   const dispatch = useDispatch();
 
-  const validImage = (image) => {
-    const fileTypes = ["png", "jpg", "jpeg"];
-
-    for (let fileType of fileTypes) {
-    }
-
-    return false;
-  };
-
   const handleSubmit = (e) => {
     e.preventDefault();
 
-    // if (Object.values(errors).length) {
-      //   setDisplayErrors(true);
-      //   return;
-      // }
+    const errors = {};
+    const fileTypes = [".png", ".jpg", ".jpeg"];
+    const validImage = (image) => {
+      for (let fileType of fileTypes) {
+        if (image.endsWith(fileType)) {
+          return true;
+        }
+      }
 
-      const spotData = {
+      return false;
+    };
+
+    if (!country.length) errors.country = "Country is required";
+    if (!address.length) errors.address = "Address is required";
+    if (!city.length) errors.city = "City required";
+    if (!state.length) errors.state = "State required";
+    if (description.length < 30)
+      errors.description = "Description needs a minimum of 30 characters";
+    if (!title.length) errors.title = "Name is required";
+    if (!price.length) errors.price = "Price is required";
+    if (!previewImg.length)
+      errors.previewImgRequired = "Preview image required";
+
+    if (previewImg.length && !validImage(previewImg)) {
+      errors.previewImg = "Image URL must end in .png, .jpg, or .jpeg";
+    }
+    if (img2.length && !validImage(img2)) {
+      errors.img2 = "Image URL must end in .png, .jpg, or .jpeg";
+    }
+    if (img3.length && !validImage(img3)) {
+      errors.img3 = "Image URL must end in .png, .jpg, or .jpeg";
+    }
+    if (img4.length && !validImage(img4)) {
+      errors.img4 = "Image URL must end in .png, .jpg, or .jpeg";
+    }
+    if (img5.length && !validImage(img5)) {
+      errors.img5 = "Image URL must end in .png, .jpg, or .jpeg";
+    }
+
+    setDisplayErrors(true);
+    setErrors(errors);
+
+    if (Object.values(errors).length) return;
+
+    const spotData = {
       address,
       city,
       state,
@@ -62,91 +89,21 @@ export default function CreateSpot() {
       price,
     };
 
-    if (formType === 'new') {
-
+    if (formType === "new") {
       dispatch(createSpot(spotData)).then((spot) =>
-      history.push(`/spots/${spot.id}`)
+        history.push(`/spots/${spot.id}`)
       );
     } else {
-
-
-
-      spotData.spotId = spotId
+      spotData.spotId = spotId;
       updateSpot(spotData).then((data) => {
-        history.push(`/spots/${spotId}`)
-      })
-
-
-
-
-
+        history.push(`/spots/${spotId}`);
+      });
     }
-
-
   };
-
-  useEffect(() => {
-    const errors = {};
-
-    const images = [img2, img3, img4, img5, previewImg];
-
-    for (let image of images) {
-      if (!validImage(image)) {
-        errors[image] = "Image URL must end in .png, .jpg, or .jpeg";
-      }
-    }
-
-    if (!country.length) {
-      errors.country = "Country is required";
-    }
-
-    if (!address.length) {
-      errors.address = "Address is required";
-    }
-
-    if (!city.length) {
-      errors.city = "City required";
-    }
-
-    if (!state.length) {
-      errors.state = "State required";
-    }
-
-    if (description.length < 30) {
-      errors.description = "Description needs a minimum of 30 characters";
-    }
-
-    if (!title.length) {
-      errors.title = "Name is required";
-    }
-
-    if (!price.length) {
-      errors.price = "Price is required";
-    }
-
-    if (!previewImg.length) {
-      errors.previewImgRequired = "Preview image required";
-    }
-
-    setErrors(errors);
-  }, [
-    country,
-    address,
-    city,
-    state,
-    description,
-    title,
-    price,
-    previewImg,
-    img2,
-    img3,
-    img4,
-    img5,
-  ]);
 
   return (
     <div>
-      <h1>Create a new Spot</h1>
+      <h1>{formType === "new" ? "Create a new spot" : "Update spot"}</h1>
       <h2>Where's upir place located?</h2>
       <p>
         Guests will only get your exact address once they booked a reservation
@@ -161,6 +118,7 @@ export default function CreateSpot() {
             onChange={(e) => setCountry(e.target.value)}
           ></input>
         </label>
+        {displayErrors && errors.address && <p>{errors.address}</p>}
         <label>
           Street address
           <input
@@ -168,10 +126,12 @@ export default function CreateSpot() {
             onChange={(e) => setAddress(e.target.value)}
           ></input>
         </label>
+        {displayErrors && errors.city && <p>{errors.city}</p>}
         <label>
           City
           <input value={city} onChange={(e) => setCity(e.target.value)}></input>
         </label>
+        {displayErrors && errors.state && <p>{errors.state}</p>}
         <label>
           State
           <input
@@ -184,6 +144,7 @@ export default function CreateSpot() {
           Mention the best features of your space, any special amentities like
           fast wif or parking, and what you love about the neighborhood.
         </p>
+        {displayErrors && errors.description && <p>{errors.description}</p>}
         <textarea
           value={description}
           onChange={(e) => setDescription(e.target.value)}
@@ -193,6 +154,7 @@ export default function CreateSpot() {
           Catch guests' attention with a spot title that highlights what makes
           your place special.
         </p>
+        {displayErrors && errors.title && <p>{errors.title}</p>}
         <label>
           <input value={title} onChange={(e) => setTitle(e.target.value)} />
         </label>
@@ -201,26 +163,38 @@ export default function CreateSpot() {
           Competitive pricing can help your listing stand out and rank higher in
           search results.
         </p>
+        {displayErrors && errors.price && <p>{errors.price}</p>}
         <label>
           $
-          <input value={price} onChange={(e) => setPrice(e.target.value)} />
+          <input
+            value={price}
+            type="number"
+            onChange={(e) => setPrice(e.target.value)}
+          />
         </label>
         <h2>Liven up your spot with photos</h2>
         <p>Submit a link to at least one photo to publish your spot.</p>
+
+        {displayErrors && errors.previewImg && <div>{errors.previewImg}</div>}
+        {displayErrors && errors.previewImgRequired && (
+          <div>{errors.previewImgRequired}</div>
+        )}
         <input
           value={previewImg}
           onChange={(e) => setPreviewImg(e.target.value)}
         />
-        {displayErrors && errors.previewImgRequired && (
-          <div>{errors.previewImgRequired}</div>
-        )}
-        {displayErrors && errors.previewImg && <div>{errors.previewImg}</div>}
+        {displayErrors && errors.img2 && <div>{errors.img2}</div>}
         <input value={img2} onChange={(e) => setImg2(e.target.value)} />
+        {displayErrors && errors.img3 && <div>{errors.img3}</div>}
         <input value={img3} onChange={(e) => setImg3(e.target.value)} />
+        {displayErrors && errors.img4 && <div>{errors.img4}</div>}
         <input value={img4} onChange={(e) => setImg4(e.target.value)} />
+        {displayErrors && errors.img5 && <div>{errors.img5}</div>}
         <input value={img5} onChange={(e) => setImg5(e.target.value)} />
         <input />
-        <button type="submit">{formType === 'new' ? 'Create Spot' : 'Update Spot'}</button>
+        <button type="submit">
+          {formType === "new" ? "Create Spot" : "Update Spot"}
+        </button>
       </form>
     </div>
   );

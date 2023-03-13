@@ -66,10 +66,11 @@ module.exports = (sequelize, DataTypes) => {
         type: DataTypes.STRING,
         allowNull: false,
         validate: {
-
           length(value) {
             if (value < 4 || value > 30) {
-              throw new Error("Please provide a username with at least 4 characters.")
+              throw new Error(
+                "Please provide a username with at least 4 characters."
+              );
             }
           },
 
@@ -85,27 +86,31 @@ module.exports = (sequelize, DataTypes) => {
         validate: {
           valid(name) {
             if (!name) {
-              throw new Error('First name is required')
+              throw new Error("First name is required");
             }
-          }
-        }
+          },
+        },
       },
       lastName: {
         type: DataTypes.STRING,
         validate: {
           valid(name) {
             if (!name) {
-              throw new Error('Last name is required')
+              throw new Error("Last name is required");
             }
-          }
-        }
+          },
+        },
       },
       email: {
         type: DataTypes.STRING,
         allowNull: false,
         validate: {
           len: [3, 256],
-          isEmail: true,
+          isEmail(email) {
+            if (!email.includes("@")) {
+              throw new Error("The provided email is invalid");
+            }
+          },
         },
       },
       hashedPassword: {

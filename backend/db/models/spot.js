@@ -145,6 +145,8 @@ module.exports = (sequelize, DataTypes) => {
             if (!value) {
               throw new Error("Price per day is required");
             }
+
+            
           },
         },
       },
